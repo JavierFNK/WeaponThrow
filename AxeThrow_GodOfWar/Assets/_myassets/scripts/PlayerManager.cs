@@ -5,6 +5,9 @@ using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
 public class PlayerManager : MonoBehaviour
 {
     InputActions newActions;
+
+    AxeBehaviour axeScript;
+
     CharacterController playerController;
     Animator playerAnimator;
 
@@ -28,7 +31,7 @@ public class PlayerManager : MonoBehaviour
     private void Awake()
     {
         newActions = new InputActions();
-
+        axeScript = GameObject.FindGameObjectWithTag("Axe").GetComponent<AxeBehaviour>();
         playerController = GetComponent<CharacterController>();
         playerAnimator = GetComponent<Animator>();
         axeRb = GameObject.FindGameObjectWithTag("Axe").GetComponent<Rigidbody>();
@@ -120,8 +123,10 @@ public class PlayerManager : MonoBehaviour
 
     public void ThrowAxe()
     {
+        axeScript.isThrowed = true;
         axeRb.isKinematic = false;
         axeRb.transform.parent = null;
+        axeRb.transform.rotation = Quaternion.Euler(52.8f, 175.7f, 79.4f);
         axeRb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
     }
 
