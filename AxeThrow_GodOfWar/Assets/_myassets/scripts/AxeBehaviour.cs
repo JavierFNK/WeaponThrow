@@ -21,9 +21,10 @@ public class AxeBehaviour : MonoBehaviour
     void Update()
     {
         if (isThrowed)
-        {
             transform.Rotate(transform.up * rotateSpeed * Time.deltaTime, Space.World);
-        }
+        else if (playerManager.isReturning)
+            transform.Rotate(transform.up * -rotateSpeed * Time.deltaTime, Space.World);
+
     }
 
     private void OnCollisionEnter(Collision collision)

@@ -11,8 +11,10 @@ public class PlayerManager : MonoBehaviour
     CharacterController playerController;
     Animator playerAnimator;
 
-    Transform target;
+    [SerializeField] Transform axe, curvePoint, targetPoint;
     Rigidbody axeRb;
+
+    Vector3 lastAxePoint;
 
     Vector2 move;
     float rotate;
@@ -26,6 +28,10 @@ public class PlayerManager : MonoBehaviour
     public bool isThrowing;
     public bool isAiming;
     public bool isReturning;
+    bool weapon;
+
+    float time = 0.0f;
+    float returnDuration = 1.0f;
 
 
     private void Awake()
@@ -35,6 +41,7 @@ public class PlayerManager : MonoBehaviour
         playerController = GetComponent<CharacterController>();
         playerAnimator = GetComponent<Animator>();
         axeRb = GameObject.FindGameObjectWithTag("Axe").GetComponent<Rigidbody>();
+        axe = GameObject.FindGameObjectWithTag("Axe").GetComponent <Transform>();
 
         PlayerActions();
     }
@@ -51,7 +58,7 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Throw.started += _ =>
         {
-            if (!isThrowing || !isReturning) 
+            if (weapon) 
             { 
                 //playerAnimator.SetLayerWeight(1, 1);
                 isAiming = true;
@@ -66,14 +73,17 @@ public class PlayerManager : MonoBehaviour
             playerAnimator.SetBool("Aim", isAiming);
             isThrowing = true;
             playerAnimator.SetTrigger("Throw");
+            weapon = false;
                
         };
 
         newActions.Player.ReturnAxe.started += _ =>
         {
-            isReturning = true;
-            playerAnimator.SetTrigger("Return");
-            ReturnAxe();
+            if (!weapon)
+            {
+                playerAnimator.SetTrigger("Return");
+                ReturnAxe();
+            }
         };
     }
 
@@ -83,6 +93,7 @@ public class PlayerManager : MonoBehaviour
     {
         isThrowing = false;
         isReturning = false;
+        weapon = true;
         rotationSpeed = 0.3f;
         throwForce = 40f;
     }
@@ -98,6 +109,17 @@ public class PlayerManager : MonoBehaviour
         {
             UpdateAnimations();
             MovePlayer();
+        }
+
+        if (isReturning)
+        {
+            time += Time.deltaTime/returnDuration;
+            float t = Mathf.Clamp01(time);
+            axeRb.position = getBQC(t, lastAxePoint, curvePoint.position, targetPoint.position);
+        }
+        else if (time > 1.0f)
+        {
+            RestartAxe();
         }
     }
     private void CheckSpeed()
@@ -137,6 +159,28 @@ public class PlayerManager : MonoBehaviour
     }
     private void ReturnAxe()
     {
+        isReturning = true;
+        time = 0.0f;
+        lastAxePoint = axe.transform.position;
+        axeRb.isKinematic = false;
+    }
+
+    Vector3 getBQC(float t, Vector3 p0, Vector3 p1, Vector3 p2)
+    {
+        float u = 1 - t;
+        return (u * u * p0) + (2 * u * t * p1) + (t * t * p2);
+    }
+
+
+    private void RestartAxe()
+    {
+        isReturning = false;
+        axeRb.transform.SetParent(targetPoint, false);
+        axeRb.transform.localPosition = Vector3.zero;
+        axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        axeRb.isKinematic = true;
+        playerAnimator.SetTrigger("Catch");
+        weapon = true;
     }
 
 
