@@ -74,26 +74,28 @@ public class PlayerManager : MonoBehaviour
     {
         isThrowing = false;
         isReturning = false;
-        CheckSpeed();
         rotationSpeed = 0.3f;
     }
 
+
+    // Update is called once per frame
+    void Update()
+    {
+        CheckSpeed();
+        if (isThrowing || isReturning)
+            playerAnimator.SetFloat("Walk", 0f);
+        else 
+        {
+            UpdateAnimations();
+            MovePlayer();
+        }
+    }
     private void CheckSpeed()
     {
         if (move.y < 0.4)
             slowSpeed = 1.8f;
         else if (move.y >= 0.4)
             speed = 2.4f;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (!isThrowing || !isReturning)
-        {
-            UpdateAnimations();
-            MovePlayer();
-        }
     }
 
     private void UpdateAnimations()
