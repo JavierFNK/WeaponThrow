@@ -35,4 +35,12 @@ public class AxeBehaviour : MonoBehaviour
             isThrowed = false;
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Hand")
+        {
+            playerManager.RestartAxe();
+        }
+    }
 }

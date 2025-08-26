@@ -14,6 +14,8 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] Transform axe, curvePoint, targetPoint;
     Rigidbody axeRb;
 
+    [SerializeField] Collider handCollider;
+
     Vector3 lastAxePoint;
 
     Vector2 move;
@@ -91,6 +93,7 @@ public class PlayerManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        handCollider.GetComponent<Collider>().enabled = false;
         isThrowing = false;
         isReturning = false;
         weapon = true;
@@ -116,10 +119,6 @@ public class PlayerManager : MonoBehaviour
             time += Time.deltaTime/returnDuration;
             float t = Mathf.Clamp01(time);
             axeRb.position = getBQC(t, lastAxePoint, curvePoint.position, targetPoint.position);
-        }
-        else if (time > 1.0f)
-        {
-            RestartAxe();
         }
     }
     private void CheckSpeed()
@@ -163,6 +162,7 @@ public class PlayerManager : MonoBehaviour
         time = 0.0f;
         lastAxePoint = axe.transform.position;
         axeRb.isKinematic = false;
+        handCollider.enabled = true;
     }
 
     Vector3 getBQC(float t, Vector3 p0, Vector3 p1, Vector3 p2)
@@ -172,15 +172,16 @@ public class PlayerManager : MonoBehaviour
     }
 
 
-    private void RestartAxe()
+    public void RestartAxe()
     {
         isReturning = false;
+        weapon = true;
         axeRb.transform.SetParent(targetPoint, false);
         axeRb.transform.localPosition = Vector3.zero;
         axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         axeRb.isKinematic = true;
         playerAnimator.SetTrigger("Catch");
-        weapon = true;
+        handCollider.enabled = false;
     }
 
 

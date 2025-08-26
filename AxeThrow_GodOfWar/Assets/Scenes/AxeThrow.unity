@@ -652,7 +652,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 432147674}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09295656, y: 0.033133693, z: -0.0030951162, w: 0.9951139}
+  m_LocalRotation: {x: 0.092956536, y: 0.033133682, z: -0.0030951155, w: 0.9951139}
   m_LocalPosition: {x: 0, y: 2.25, z: -4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1340,7 +1340,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593501977}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.092956565, y: 0.033133697, z: -0.0030951179, w: 0.9951139}
+  m_LocalRotation: {x: 0.092956536, y: 0.033133686, z: -0.003095116, w: 0.9951139}
   m_LocalPosition: {x: 0, y: 2.25, z: -4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1649,9 +1649,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1812813422}
+  - component: {fileID: 1812813423}
   m_Layer: 0
   m_Name: Target
-  m_TagString: Untagged
+  m_TagString: Hand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1672,6 +1673,27 @@ Transform:
   - {fileID: 80585979}
   m_Father: {fileID: 2121417478}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 180}
+--- !u!65 &1812813423
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1812813421}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1970000368
 GameObject:
   m_ObjectHideFlags: 0
@@ -1985,6 +2007,7 @@ MonoBehaviour:
   axe: {fileID: 80585979}
   curvePoint: {fileID: 192803301}
   targetPoint: {fileID: 1812813422}
+  handCollider: {fileID: 1812813423}
   slowSpeed: 0
   speed: 0
   rotationSpeed: 0
