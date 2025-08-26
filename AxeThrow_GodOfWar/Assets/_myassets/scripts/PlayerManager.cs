@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -7,12 +8,17 @@ public class PlayerManager : MonoBehaviour
     CharacterController playerController;
     Animator playerAnimator;
 
+    Transform target;
+    Rigidbody axeRb;
+
     Vector2 move;
     float rotate;
 
     public float slowSpeed;
     public float speed;
     public float rotationSpeed;
+
+    public float throwForce;
 
     public bool isThrowing;
     public bool isAiming;
@@ -25,6 +31,7 @@ public class PlayerManager : MonoBehaviour
 
         playerController = GetComponent<CharacterController>();
         playerAnimator = GetComponent<Animator>();
+        axeRb = GameObject.FindGameObjectWithTag("Axe").GetComponent<Rigidbody>();
 
         PlayerActions();
     }
@@ -43,6 +50,7 @@ public class PlayerManager : MonoBehaviour
         {
             if (!isThrowing || !isReturning) 
             { 
+                //playerAnimator.SetLayerWeight(1, 1);
                 isAiming = true;
                 playerAnimator.SetBool("Aim", isAiming);
             }
@@ -50,14 +58,12 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Throw.canceled += _ =>
         {
-            if (!isThrowing || !isReturning)
-            {
-                isAiming = false;
-                playerAnimator.SetBool("Aim", isAiming);
-                isThrowing = true;
-                playerAnimator.SetTrigger("Throw");
-                ThrowAxe();
-            }        
+            //playerAnimator.SetLayerWeight(1, 0);
+            isAiming = false;
+            playerAnimator.SetBool("Aim", isAiming);
+            isThrowing = true;
+            playerAnimator.SetTrigger("Throw");
+               
         };
 
         newActions.Player.ReturnAxe.started += _ =>
@@ -75,6 +81,7 @@ public class PlayerManager : MonoBehaviour
         isThrowing = false;
         isReturning = false;
         rotationSpeed = 0.3f;
+        throwForce = 40f;
     }
 
 
@@ -111,10 +118,18 @@ public class PlayerManager : MonoBehaviour
         transform.Rotate(Vector3.up * rotate * rotationSpeed *  Time.deltaTime * 360f); 
     }
 
-    private void ThrowAxe()
+    public void ThrowAxe()
     {
+        axeRb.isKinematic = false;
+        axeRb.transform.parent = null;
+        axeRb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
     }
 
+    public void RestartBools()
+    {
+        if (isThrowing)
+            isThrowing = false;
+    }
     private void ReturnAxe()
     {
     }
