@@ -40,6 +40,7 @@ public class PlayerManager : MonoBehaviour
     bool returnAttack;
     bool comboAttack;
 
+    bool runAttack;
     bool attack1;
     bool attack2;
     bool attack3;
@@ -70,6 +71,16 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Rotate.canceled += _ => rotate = 0f;
 
+
+        newActions.Player.Run.started += _ =>
+        {
+            isRunning = true;
+        };
+
+        newActions.Player.Run.canceled += _ =>
+        {
+            isRunning = false;
+        };
         newActions.Player.Throw.started += _ =>
         {
             if (weapon) 
@@ -119,6 +130,7 @@ public class PlayerManager : MonoBehaviour
         attack1 = false;
         attack2 = false;
         attack3 = false;
+        runAttack = false;
 
         rotationSpeed = 0.3f;
         throwForce = 40f;
@@ -129,7 +141,7 @@ public class PlayerManager : MonoBehaviour
     void Update()
     {
         CheckSpeed();
-        if (isThrowing || isReturning)
+        if (isThrowing || isReturning || isAttacking)
             playerAnimator.SetFloat("Walk", 0f);
         else 
         {
@@ -150,11 +162,14 @@ public class PlayerManager : MonoBehaviour
             slowSpeed = 1.8f;
         else if (move.y >= 0.4)
             speed = 2.4f;
+        if (isRunning)
+            speed = 5.2f;
     }
 
     private void UpdateAnimations()
     {
         playerAnimator.SetFloat("Walk", move.y);
+        playerAnimator.SetBool("IsRunning", isRunning);
     }
 
     private void MovePlayer()
@@ -213,18 +228,27 @@ public class PlayerManager : MonoBehaviour
 
         if (!returnAttack && weapon)
         {
-            comboAttack = true;
             isAttacking = true;
-            if (comboAttack)
-                attackState++;
-            if (attackState == 1)
+            if(isRunning && move.y >= 0.1f && attackState == 0)
             {
-                playerAnimator.SetInteger("Attack", 1);
-                if (!playerInfo.IsName("ReverseAttack"))
+                runAttack = true;
+                playerAnimator.SetBool("IsAttacking", isAttacking);
+            }
+            else if (!runAttack)
+            {
+                comboAttack = true;
+                
+                if (comboAttack)
+                    attackState++;
+                if (attackState == 1)
                 {
-                    attack1 = true;
-                    attack2 = false;
-                    attack3 = false;
+                    playerAnimator.SetInteger("Attack", 1);
+                    if (!playerInfo.IsName("ReverseAttack"))
+                    {
+                        attack1 = true;
+                        attack2 = false;
+                        attack3 = false;
+                    }
                 }
             }
         }
@@ -284,6 +308,16 @@ public class PlayerManager : MonoBehaviour
             playerAnimator.SetInteger("Attack", 0);
             attackState = 0;
             returnAttack = false;
+        }
+        else if (playerInfo.IsName("Attack4"))
+        {
+            playerAnimator.SetInteger("Attack", 0);
+            comboAttack = true;
+            attackState = 0;
+            isAttacking = false;
+            runAttack = false;
+            isRunning = false;
+            playerAnimator.SetBool("IsAttacking", isAttacking);
         }
     }
 
