@@ -35,6 +35,18 @@ public class PlayerManager : MonoBehaviour
     float time = 0.0f;
     float returnDuration = 1.0f;
 
+    bool isAttacking;
+    int attackState;
+    bool returnAttack;
+    bool comboAttack;
+
+    bool attack1;
+    bool attack2;
+    bool attack3;
+    
+    bool isRunning;
+
+
 
     private void Awake()
     {
@@ -87,6 +99,8 @@ public class PlayerManager : MonoBehaviour
                 ReturnAxe();
             }
         };
+
+        newActions.Player.Attack.started += _ => Attack();
     }
 
 
@@ -97,6 +111,15 @@ public class PlayerManager : MonoBehaviour
         isThrowing = false;
         isReturning = false;
         weapon = true;
+
+        attackState = 0;
+        returnAttack = false;
+        isAttacking = false;
+        comboAttack = false;
+        attack1 = false;
+        attack2 = false;
+        attack3 = false;
+
         rotationSpeed = 0.3f;
         throwForce = 40f;
     }
@@ -182,6 +205,86 @@ public class PlayerManager : MonoBehaviour
         axeRb.isKinematic = true;
         playerAnimator.SetTrigger("Catch");
         handCollider.enabled = false;
+    }
+
+    private void Attack()
+    {
+        AnimatorStateInfo playerInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+
+        if (!returnAttack && weapon)
+        {
+            comboAttack = true;
+            isAttacking = true;
+            if (comboAttack)
+                attackState++;
+            if (attackState == 1)
+            {
+                playerAnimator.SetInteger("Attack", 1);
+                if (!playerInfo.IsName("ReverseAttack"))
+                {
+                    attack1 = true;
+                    attack2 = false;
+                    attack3 = false;
+                }
+            }
+        }
+
+    }
+
+    public void CheckAttackState()
+    {
+        comboAttack = false;
+
+        AnimatorStateInfo playerInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+
+        if (playerInfo.IsName("Attack1") && attackState == 1)
+        {
+            playerAnimator.SetInteger("Attack", 0);
+            comboAttack = true;
+            returnAttack = true;
+            isAttacking = false;
+            attackState = 0;
+        }
+        else if(playerInfo.IsName("Attack1") && attackState >= 2)
+        {
+            playerAnimator.SetInteger("Attack", 2);
+            comboAttack = true;
+            attack1 = false;
+            attack2 = true;
+            attack3 = false;
+        }
+        else if (playerInfo.IsName("Attack2") && attackState == 2)
+        {
+            playerAnimator.SetInteger("Attack", 0);
+            comboAttack = true;
+            attackState = 0;
+            isAttacking = false;
+        }
+        else if (playerInfo.IsName("Attack2") && attackState >= 3)
+        {
+            playerAnimator.SetInteger("Attack", 3);
+            comboAttack = true;
+            attack1 = false;
+            attack2 = false;
+            attack3 = true;
+        }
+        else if (playerInfo.IsName("Attack3"))
+        {
+            playerAnimator.SetInteger("Attack", 0);
+            comboAttack = true;
+            attackState = 0;
+            isAttacking = false;
+            attack1 = false;
+            attack2 = false;
+            attack3 = false;
+        }
+        else if (playerInfo.IsName("ReverseAttack"))
+        {
+            comboAttack = true;
+            playerAnimator.SetInteger("Attack", 0);
+            attackState = 0;
+            returnAttack = false;
+        }
     }
 
 

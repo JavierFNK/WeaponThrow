@@ -308,7 +308,7 @@ GameObject:
   - component: {fileID: 192803304}
   - component: {fileID: 192803303}
   - component: {fileID: 192803302}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CurvePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -683,7 +683,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 432147674}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.092956536, y: 0.033133682, z: -0.0030951155, w: 0.9951139}
+  m_LocalRotation: {x: 0.09295654, y: 0.03313369, z: -0.0030951162, w: 0.9951139}
   m_LocalPosition: {x: 0, y: 2.25, z: -4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1433,7 +1433,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593501977}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.092956536, y: 0.033133686, z: -0.003095116, w: 0.9951139}
+  m_LocalRotation: {x: 0.09295655, y: 0.033133693, z: -0.003095117, w: 0.9951139}
   m_LocalPosition: {x: 0, y: 2.25, z: -4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
