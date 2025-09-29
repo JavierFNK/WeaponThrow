@@ -15,11 +15,14 @@ public class AttacksPlayer : MonoBehaviour
     public bool attack1;
     public bool attack2;
     public bool attack3;
-
+    private void Awake()
+    {
+        manager = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerManager>();
+        playerAnimator = GetComponent<Animator>();
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        manager = GetComponent<PlayerManager>();
         attackState = 0;
         returnAttack = false;
         isAttacking = false;
@@ -28,12 +31,6 @@ public class AttacksPlayer : MonoBehaviour
         attack2 = false;
         attack3 = false;
         runAttack = false;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void Attack()

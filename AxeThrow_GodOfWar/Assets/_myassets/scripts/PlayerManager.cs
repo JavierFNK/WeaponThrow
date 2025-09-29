@@ -20,6 +20,8 @@ public class PlayerManager : MonoBehaviour
 
     Vector3 lastAxePoint;
 
+    [SerializeField] Transform restraint;
+
     public Vector2 move;
     float rotate;
 
@@ -49,7 +51,8 @@ public class PlayerManager : MonoBehaviour
         playerAnimator = GetComponent<Animator>();
         axeRb = GameObject.FindGameObjectWithTag("Axe").GetComponent<Rigidbody>();
         axe = GameObject.FindGameObjectWithTag("Axe").GetComponent <Transform>();
-        attacksPlayer = GetComponent<AttacksPlayer>();
+        attacksPlayer = GameObject.FindGameObjectWithTag("Player").GetComponent<AttacksPlayer>();
+        restraint = GameObject.FindGameObjectWithTag("Restraint").GetComponent<Transform>();
 
         PlayerActions();
     }
@@ -85,10 +88,16 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Equip.started += _ =>
         {
-            if (weapon || axeScript.isThrowed)
-                Disarm();
-            else if (!weapon || axeScript.isThrowed)
-                Equip();
+            if (weapon && !axeScript.isThrowed)
+            {
+                weapon = false;
+                playerAnimator.SetTrigger("Disarm");
+            }
+            else if (!weapon)
+            {
+                weapon = true;
+                playerAnimator.SetTrigger("Equip");
+            }
         };
 
         newActions.Player.Attack.started += _ => attacksPlayer.Attack();
@@ -116,7 +125,7 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.ReturnAxe.started += _ =>
         {
-            if (!weapon)
+            if (!weapon && axeScript.isThrowed)
             {
                 playerAnimator.SetTrigger("Return");
                 ReturnAxe();
@@ -245,15 +254,24 @@ public class PlayerManager : MonoBehaviour
         handCollider.enabled = false;
     }
 
-    private void Equip()
+    public void Equip()
     {
-        weapon = true;
-
+        axeRb.transform.parent = null;
+        axeRb.transform.SetParent(targetPoint, false);
+        axeRb.transform.localPosition = Vector3.zero;
+        axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        if (!weapon)
+            weapon = true;
     }
 
-    private void Disarm()
+    public void Disarm()
     {
-        throw new NotImplementedException();
+        axeRb.transform.parent = null;
+        axeRb.transform.SetParent(restraint, false);
+        axeRb.transform.localPosition = Vector3.zero;
+        axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        if (weapon)
+            weapon = false;
     }
 
     private void OnEnable()
