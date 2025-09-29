@@ -8,6 +8,8 @@ public class PlayerManager : MonoBehaviour
 
     AxeBehaviour axeScript;
 
+    AttacksPlayer attacksPlayer;
+
     CharacterController playerController;
     Animator playerAnimator;
 
@@ -18,7 +20,7 @@ public class PlayerManager : MonoBehaviour
 
     Vector3 lastAxePoint;
 
-    Vector2 move;
+    public Vector2 move;
     float rotate;
 
     public float slowSpeed;
@@ -30,24 +32,14 @@ public class PlayerManager : MonoBehaviour
     public bool isThrowing;
     public bool isAiming;
     public bool isReturning;
-    bool weapon;
+    public bool weapon;
 
     float time = 0.0f;
     float returnDuration = 1.0f;
-
-    bool isAttacking;
-    int attackState;
-    bool returnAttack;
-    bool comboAttack;
-
-    bool runAttack;
-    bool attack1;
-    bool attack2;
-    bool attack3;
     
-    bool isRunning;
-
-
+    public bool isRunning;
+    public bool isRolling;
+    public bool isDodging;
 
     private void Awake()
     {
@@ -57,6 +49,7 @@ public class PlayerManager : MonoBehaviour
         playerAnimator = GetComponent<Animator>();
         axeRb = GameObject.FindGameObjectWithTag("Axe").GetComponent<Rigidbody>();
         axe = GameObject.FindGameObjectWithTag("Axe").GetComponent <Transform>();
+        attacksPlayer = GetComponent<AttacksPlayer>();
 
         PlayerActions();
     }
@@ -81,6 +74,25 @@ public class PlayerManager : MonoBehaviour
         {
             isRunning = false;
         };
+
+        newActions.Player.Avoid.started += _ =>
+        {
+            if (move.y >= 0f && !isRolling)
+                Roll();
+            else if (move.y < 0f && !isDodging)
+                Dodge();
+        };
+
+        newActions.Player.Equip.started += _ =>
+        {
+            if (weapon || axeScript.isThrowed)
+                Disarm();
+            else if (!weapon || axeScript.isThrowed)
+                Equip();
+        };
+
+        newActions.Player.Attack.started += _ => attacksPlayer.Attack();
+        
         newActions.Player.Throw.started += _ =>
         {
             if (weapon) 
@@ -111,8 +123,9 @@ public class PlayerManager : MonoBehaviour
             }
         };
 
-        newActions.Player.Attack.started += _ => Attack();
     }
+
+
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -122,16 +135,6 @@ public class PlayerManager : MonoBehaviour
         isThrowing = false;
         isReturning = false;
         weapon = true;
-
-        attackState = 0;
-        returnAttack = false;
-        isAttacking = false;
-        comboAttack = false;
-        attack1 = false;
-        attack2 = false;
-        attack3 = false;
-        runAttack = false;
-
         rotationSpeed = 0.3f;
         throwForce = 40f;
     }
@@ -141,7 +144,7 @@ public class PlayerManager : MonoBehaviour
     void Update()
     {
         CheckSpeed();
-        if (isThrowing || isReturning || isAttacking)
+        if (isThrowing || isReturning || attacksPlayer.isAttacking || isDodging || isRolling)
             playerAnimator.SetFloat("Walk", 0f);
         else 
         {
@@ -161,7 +164,7 @@ public class PlayerManager : MonoBehaviour
         if (move.y < 0.4)
             slowSpeed = 1.8f;
         else if (move.y >= 0.4)
-            speed = 2.4f;
+            speed = 3.5f;
         if (isRunning)
             speed = 5.2f;
     }
@@ -174,10 +177,30 @@ public class PlayerManager : MonoBehaviour
 
     private void MovePlayer()
     {
-        if (move.y > 0.1f)
+        if (Mathf.Abs(move.y) > 0.1f)
             playerController.SimpleMove(transform.forward * move.y * speed);
 
-        transform.Rotate(Vector3.up * rotate * rotationSpeed *  Time.deltaTime * 360f); 
+
+            transform.Rotate(Vector3.up * rotate * rotationSpeed * Time.deltaTime * 360f); 
+    }
+    private void Dodge()
+    {
+        isDodging = true;
+        playerAnimator.SetTrigger("Dodge");
+    }
+
+    private void Roll()
+    {
+        isRolling = true;
+        playerAnimator.SetTrigger("Roll");
+    }
+
+    public void CheckAvoidState()
+    {
+        if (isRolling)
+            isRolling = false;
+        if (isDodging)
+            isDodging= false;
     }
 
     public void ThrowAxe()
@@ -222,105 +245,16 @@ public class PlayerManager : MonoBehaviour
         handCollider.enabled = false;
     }
 
-    private void Attack()
+    private void Equip()
     {
-        AnimatorStateInfo playerInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
-
-        if (!returnAttack && weapon)
-        {
-            isAttacking = true;
-            if(isRunning && move.y >= 0.1f && attackState == 0)
-            {
-                runAttack = true;
-                playerAnimator.SetBool("IsAttacking", isAttacking);
-            }
-            else if (!runAttack)
-            {
-                comboAttack = true;
-                
-                if (comboAttack)
-                    attackState++;
-                if (attackState == 1)
-                {
-                    playerAnimator.SetInteger("Attack", 1);
-                    if (!playerInfo.IsName("ReverseAttack"))
-                    {
-                        attack1 = true;
-                        attack2 = false;
-                        attack3 = false;
-                    }
-                }
-            }
-        }
+        weapon = true;
 
     }
 
-    public void CheckAttackState()
+    private void Disarm()
     {
-        comboAttack = false;
-
-        AnimatorStateInfo playerInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
-
-        if (playerInfo.IsName("Attack1") && attackState == 1)
-        {
-            playerAnimator.SetInteger("Attack", 0);
-            comboAttack = true;
-            returnAttack = true;
-            isAttacking = false;
-            attackState = 0;
-        }
-        else if(playerInfo.IsName("Attack1") && attackState >= 2)
-        {
-            playerAnimator.SetInteger("Attack", 2);
-            comboAttack = true;
-            attack1 = false;
-            attack2 = true;
-            attack3 = false;
-        }
-        else if (playerInfo.IsName("Attack2") && attackState == 2)
-        {
-            playerAnimator.SetInteger("Attack", 0);
-            comboAttack = true;
-            attackState = 0;
-            isAttacking = false;
-        }
-        else if (playerInfo.IsName("Attack2") && attackState >= 3)
-        {
-            playerAnimator.SetInteger("Attack", 3);
-            comboAttack = true;
-            attack1 = false;
-            attack2 = false;
-            attack3 = true;
-        }
-        else if (playerInfo.IsName("Attack3"))
-        {
-            playerAnimator.SetInteger("Attack", 0);
-            comboAttack = true;
-            attackState = 0;
-            isAttacking = false;
-            attack1 = false;
-            attack2 = false;
-            attack3 = false;
-        }
-        else if (playerInfo.IsName("ReverseAttack"))
-        {
-            comboAttack = true;
-            playerAnimator.SetInteger("Attack", 0);
-            attackState = 0;
-            returnAttack = false;
-        }
-        else if (playerInfo.IsName("Attack4"))
-        {
-            playerAnimator.SetInteger("Attack", 0);
-            comboAttack = true;
-            attackState = 0;
-            isAttacking = false;
-            runAttack = false;
-            isRunning = false;
-            playerAnimator.SetBool("IsAttacking", isAttacking);
-        }
+        throw new NotImplementedException();
     }
-
 
     private void OnEnable()
     {
