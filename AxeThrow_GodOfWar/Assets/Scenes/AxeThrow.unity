@@ -296,6 +296,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotateSpeed: 1500
   isThrowed: 0
+  landed: 0
 --- !u!1 &192803300
 GameObject:
   m_ObjectHideFlags: 0
@@ -2231,6 +2232,7 @@ MonoBehaviour:
   isRunning: 0
   isRolling: 0
   isDodging: 0
+  isEquipping: 0
 --- !u!114 &2057090120
 MonoBehaviour:
   m_ObjectHideFlags: 0

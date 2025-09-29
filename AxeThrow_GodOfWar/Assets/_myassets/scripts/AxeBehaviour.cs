@@ -10,6 +10,8 @@ public class AxeBehaviour : MonoBehaviour
 
     public bool isThrowed;
 
+    public bool landed;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -20,7 +22,7 @@ public class AxeBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isThrowed)
+        if (isThrowed && !landed)
             transform.Rotate(transform.up * rotateSpeed * Time.deltaTime, Space.World);
         else if (playerManager.isReturning)
             transform.Rotate(transform.up * -rotateSpeed * Time.deltaTime, Space.World);
@@ -32,7 +34,7 @@ public class AxeBehaviour : MonoBehaviour
         if (collision.gameObject.tag != "Player")
         {
             axeRb.isKinematic = true;
-            isThrowed = false;
+            landed = true;
         }
     }
 

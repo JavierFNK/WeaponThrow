@@ -43,6 +43,8 @@ public class PlayerManager : MonoBehaviour
     public bool isRolling;
     public bool isDodging;
 
+    public bool isEquipping;
+
     private void Awake()
     {
         newActions = new InputActions();
@@ -88,13 +90,15 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Equip.started += _ =>
         {
-            if (weapon && !axeScript.isThrowed)
+            if (weapon && !axeScript.isThrowed && !isEquipping)
             {
+                isEquipping = true;
                 weapon = false;
                 playerAnimator.SetTrigger("Disarm");
             }
-            else if (!weapon)
+            else if (!weapon && !axeScript.isThrowed && !isEquipping)
             {
+                isEquipping = true;
                 weapon = true;
                 playerAnimator.SetTrigger("Equip");
             }
@@ -114,12 +118,15 @@ public class PlayerManager : MonoBehaviour
 
         newActions.Player.Throw.canceled += _ =>
         {
-            //playerAnimator.SetLayerWeight(1, 0);
-            isAiming = false;
-            playerAnimator.SetBool("Aim", isAiming);
-            isThrowing = true;
-            playerAnimator.SetTrigger("Throw");
-            weapon = false;
+            if (!axeScript.isThrowed)
+            {
+                //playerAnimator.SetLayerWeight(1, 0);
+                isAiming = false;
+                playerAnimator.SetBool("Aim", isAiming);
+                isThrowing = true;
+                playerAnimator.SetTrigger("Throw");
+                weapon = false;
+            }
                
         };
 
@@ -141,6 +148,7 @@ public class PlayerManager : MonoBehaviour
     void Start()
     {
         handCollider.GetComponent<Collider>().enabled = false;
+        isEquipping = false;
         isThrowing = false;
         isReturning = false;
         weapon = true;
@@ -153,7 +161,7 @@ public class PlayerManager : MonoBehaviour
     void Update()
     {
         CheckSpeed();
-        if (isThrowing || isReturning || attacksPlayer.isAttacking || isDodging || isRolling)
+        if (isThrowing || isReturning || attacksPlayer.isAttacking || isDodging || isRolling || isEquipping || attacksPlayer.returnAttack)
             playerAnimator.SetFloat("Walk", 0f);
         else 
         {
@@ -174,6 +182,8 @@ public class PlayerManager : MonoBehaviour
             slowSpeed = 1.8f;
         else if (move.y >= 0.4)
             speed = 3.5f;
+        else if (Mathf.Abs(move.y) <= -0.1)
+            speed = 1f;
         if (isRunning)
             speed = 5.2f;
     }
@@ -229,6 +239,7 @@ public class PlayerManager : MonoBehaviour
     private void ReturnAxe()
     {
         isReturning = true;
+        axeScript.landed = false;
         time = 0.0f;
         lastAxePoint = axe.transform.position;
         axeRb.isKinematic = false;
@@ -244,6 +255,7 @@ public class PlayerManager : MonoBehaviour
 
     public void RestartAxe()
     {
+        axeScript.isThrowed = false;
         isReturning = false;
         weapon = true;
         axeRb.transform.SetParent(targetPoint, false);
@@ -262,16 +274,23 @@ public class PlayerManager : MonoBehaviour
         axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         if (!weapon)
             weapon = true;
+        if (isEquipping)
+            isEquipping = false;
     }
 
     public void Disarm()
     {
-        axeRb.transform.parent = null;
-        axeRb.transform.SetParent(restraint, false);
-        axeRb.transform.localPosition = Vector3.zero;
-        axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-        if (weapon)
-            weapon = false;
+        if (!axeScript.isThrowed)
+        {
+            axeRb.transform.parent = null;
+            axeRb.transform.SetParent(restraint, false);
+            axeRb.transform.localPosition = Vector3.zero;
+            axeRb.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            if (weapon)
+                weapon = false;
+            if (isEquipping)
+                isEquipping = false;
+        }
     }
 
     private void OnEnable()
